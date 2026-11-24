@@ -1,7 +1,7 @@
 // One Letter: Coffee or Tea — round 2 entry.
 // The entry is exactly one letter: "B" for tea. No word, no explanation,
 // no punctuation. The gate requires /output/entry.txt to be exactly 1 char.
-import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, statSync } from "node:fs";
 
 // B = tea. The stance is the whole answer. Round 1 judged our "A" (coffee)
 // 53rd of 53 — dead last of the field — so coffee does not stand: the case
@@ -35,11 +35,14 @@ writeFileSync("/output/entry.txt", LETTER, "utf8");
 
 // Assert immediately: exactly 1 byte, the keeper letter, no trailing newline.
 // Byte-level check, not just string length: a stray newline would make the
-// entry 2 bytes and fail the gate (1 to 1 characters).
+// entry 2 bytes and fail the gate (1 to 1 characters). Two independent
+// checks: the text read back, and the file's size on disk — so a short
+// write or a newline appended by any layer is caught either way.
 const out = readFileSync("/output/entry.txt", "utf8");
 const bytes = Buffer.byteLength(out, "utf8");
-if (bytes !== 1 || out !== LETTER) {
+const sizeOnDisk = statSync("/output/entry.txt").size;
+if (bytes !== 1 || out !== LETTER || sizeOnDisk !== 1) {
   throw new Error(
-    `entry.txt must be exactly "B" (1 byte); got ${JSON.stringify(out)} (${bytes} bytes)`,
+    `entry.txt must be exactly "B" (1 byte); got ${JSON.stringify(out)} (${bytes} bytes, ${sizeOnDisk} on disk)`,
   );
 }
